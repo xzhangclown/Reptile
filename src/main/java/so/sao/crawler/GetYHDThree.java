@@ -4,29 +4,27 @@ package so.sao.crawler;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.chrome.ChromeDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import redis.clients.jedis.Jedis;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
-import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.pipeline.ConsolePipeline;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.selector.Html;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static so.sao.crawler.GetYHDFirst.url;
-
 /**
  * 
- * @author guangpu.yan
+ * @author xzhang
  * @create 2017-09-30 10:24
  **/
 public class GetYHDThree implements PageProcessor {
-    //Jedis jedis = new Jedis("10.100.50.55", 6379, 10000);
+    //Jedis jedis = new Jedis("10.100.50.55", 7001, 10000);
     //static List threeUrls = new ArrayList();
     static List result = new ArrayList();
     static String fileName = null;
@@ -42,11 +40,15 @@ public class GetYHDThree implements PageProcessor {
                 .addCookie("rkv","V0800")
                 .addCookie("unpl","V2_ZzNtbUBURUdzDRFdKR9cVmJRRglKVEoVd1pEAHtKVA1jBBtUclRCFXMUR1xnG10UZgsZWUFcQxBFCHZXchBYAWcCGllyBBNNIEwHDCRSBUE3XHxcFVUWF3RaTwEoSVoAYwtBDkZUFBYhW0IAKElVVTUFR21yVEMldQl2VHMbVQZlCxRUcmdEJUU4Qld6G14AVwIiXHIVF0lzD05dfR0RBW8BG15AX0UcRQl2Vw%3d%3d");*/
     public void process(Page page) {
-        System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\ChromeDriver.exe");
+        //System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\ChromeDriver.exe");
+        ChromeDriverService service = new ChromeDriverService.Builder().usingDriverExecutable(new File("C:\\Program Files (x86)\\Google\\Chrome\\Application\\ChromeDriver.exe")).usingAnyFreePort().build();
         WebDriver driver = null;
-        Jedis jedis = new Jedis("10.100.50.55", 6379, 10000);
+        Jedis jedis = null;
         try{
-            driver = new ChromeDriver();
+            jedis = new Jedis("10.100.50.55", 7001, 10000);
+            service.start();
+            //driver = new ChromeDriver();
+            driver = new RemoteWebDriver(service.getUrl(), DesiredCapabilities.chrome());
             driver.get(page.getUrl().get());
             /*List<WebElement> webElements = driver.findElement(By.xpath("//div[@class='mod_search_guide clearfix']/div[@class='classWrap']/div[@class='guide_box']/div[@class='guide_main']/ul/")).findElements(By.tagName("li"));
             if(webElements!=null&&!webElements.isEmpty()){
@@ -92,8 +94,16 @@ public class GetYHDThree implements PageProcessor {
         }finally {
             try{
                 driver.quit();
+                service.stop();
             }catch (Exception ee){
                 ee.printStackTrace();
+            }
+            try{
+                if(jedis!=null){
+                    jedis.close();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
 

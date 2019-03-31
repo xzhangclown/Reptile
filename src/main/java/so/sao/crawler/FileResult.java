@@ -6,7 +6,7 @@ import java.io.IOException;
 
 /**
  * 
- * @author guangpu.yan
+ * @author xzhang
  * @create 2017-10-02 23:21
  **/
 public class FileResult {
